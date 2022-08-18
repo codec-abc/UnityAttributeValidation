@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b33a250422fd2744fa517eb67d2778fb, type: 3}
+  m_Name: ValidationParameters
+  m_EditorClassIdentifier: 
+  m_config:
+    m_folderPathsToIgnore:
+    - Packages/
+    - Assets/_DUDE_DATAS
+    - Assets/_DUDE_Vegetation
+    - Assets/_PLUGINS
+    - Assets/_DUDE_Circulation
+    - Assets/_PROJECT/DiggingPrecomputedData
+    - Assets/Plugins
+    - Assets/_DUDE_Digging
+    - Assets/Samples/DUDE.Vehicle
+    - Assets/TestValidator
+    m_fileExtensionsToIgnore:
+    - .cs
+    - .png
+    - .fbx
+    - .FBX
+    - .mp3
+    - .wav
+    - .mat
+    - .mp4
+    - .tif
+    - .tga
+    - .bmp
+    - .txt
+    - .json

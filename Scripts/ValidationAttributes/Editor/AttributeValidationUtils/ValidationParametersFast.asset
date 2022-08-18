@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b33a250422fd2744fa517eb67d2778fb, type: 3}
+  m_Name: ValidationParametersFast
+  m_EditorClassIdentifier: 
+  m_config:
+    m_folderPathsToIgnore:
+    - Packages/
+    - Assets/_DUDE/
+    - Assets/_DUDE_Circulation/
+    - Assets/_DUDE_DATAS/
+    - Assets/_PLUGINS/
+    - Assets/_TerrainAutoUpgrade/
+    - Assets/AddressableAssetsData/
+    - Assets/AwesomeTechnologies/
+    - Assets/DataBase/
+    - Assets/DebugDrawingExtension/
+    - Assets/Editor Default Resources/
+    - Assets/Gizmos/
+    - Assets/Graphy - Ultimate Stats Monitor/
+    - Assets/MeshTerrainData/
+    - Assets/MicroSplatData/
+    - Assets/Packages/
+    - Assets/PersistentVegetationStorageData/
+    - Assets/Plugins/
+    - Assets/Samples/
+    - Assets/StableEnum-master/
+    - Assets/StreamingAssets/
+    - Assets/Terrain_Resources/
+    - Assets/Toon/
+    - Assets/Voices/
+    - Assets/Water FX Particles/
+    - Assets/_PROJECT/DiggingPrecomputedData/Resources/
+    - Assets/_PROJECT/0DAsset/TrafficData/
+    - Assets/_PROJECT/
+    m_fileExtensionsToIgnore: []
