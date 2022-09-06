@@ -8,9 +8,9 @@ public class TestObject : MonoBehaviour
     public int Int = default;
     public int? Intnull = null;
 
-    // [NotNull]
-    // public TestStruct tstruct = default;
+    [AttributeValidation.NotNull]
     public string String = default;
+
     public bool Bool = default;
     [MinValue(12)]
     public float Float = default;

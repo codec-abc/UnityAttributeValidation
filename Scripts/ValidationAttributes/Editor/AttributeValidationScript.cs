@@ -19,8 +19,11 @@ namespace AttributeValidation
         private readonly AttributeValidationConfig m_validationParameters;
         private readonly IValidationContext m_validationContext;
         private List<AssetToValidate> m_allAssetsFound;
+
         private List<string> m_allScenesPaths;
+
         private bool m_logInConsole;
+
         private Exception m_runException = null;
 
         public AttributeValidationScript(
@@ -275,7 +278,7 @@ namespace AttributeValidation
             var childs = rootGameObject.GetComponentsInChildren<Transform>(true);
             foreach (var childGameObject in childs)
             {
-                string hierarchy = GetHierarchyFromToObject(childGameObject.gameObject, rootGameObject);
+                string hierarchy = GetHierarchyToGoFromGo(childGameObject.gameObject, rootGameObject);
                 foreach (var component in childGameObject.GetComponents<Component>())
                 {
                     if (component != null && !(component is Transform))
@@ -291,13 +294,13 @@ namespace AttributeValidation
             }
         }
 
-        private static string GetHierarchyFromToObject(GameObject childGameObject, GameObject rootGameObject)
+        private static string GetHierarchyToGoFromGo(GameObject childGameObject, GameObject rootGameObject)
         {
             var hierarchy = "";
             var current = childGameObject;
             while (current.transform.parent != null && current.transform.parent.gameObject != rootGameObject)
             {
-                hierarchy = childGameObject.name + "/" + hierarchy;
+                hierarchy = current.name + "/" + hierarchy;
                 current = current.transform.parent.gameObject;
             }
 
@@ -368,11 +371,11 @@ namespace AttributeValidation
             }
             else
             {
-                foreach (BaseValidatableAttribute invalidAttribute in validation.InvalidAttributes)
+                foreach (var invalidAttribute in validation.InvalidAttributes)
                 {
                     _ = builder.AppendLine(
                         Concat(AttributeValidationConfig.SPACE_INDENT, indentLevel) +
-                        $"=> {invalidAttribute.GetType()}");
+                        $"=> {invalidAttribute.GetAttributeType()}");
                 }
                 if (validation.IsFieldNotValue && validation.ChildsValidations.Count != 0)
                 {

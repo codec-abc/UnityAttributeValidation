@@ -1,5 +1,6 @@
+using System;
+using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 
 namespace AttributeValidation
 {
@@ -19,8 +20,10 @@ namespace AttributeValidation
 
         CustomLogicResult CustomLogicForAsset(
             string path,
-            Object loadedObj,
+            UnityEngine.Object loadedObj,
             IAssetsToValidateCollection assetsToValidateCollection);
+
+        public IReadOnlyDictionary<Type, BaseValidator> GetExtendedAttributeValidator();
     }
 
     public interface IAssetsToValidateCollection

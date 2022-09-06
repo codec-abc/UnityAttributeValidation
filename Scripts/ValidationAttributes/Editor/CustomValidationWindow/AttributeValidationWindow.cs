@@ -22,12 +22,18 @@ namespace AttributeValidation
         private class FoldOutState
         {
             public bool IsFoldOut;
+
+            [AttributeValidation.NotNull]
             public string Name;
         }
 
+        [System.NonSerialized]
         private Vector2 m_currentScrollPosition;
+
+        [System.NonSerialized]
         private bool m_resultFoldout = false;
 
+        [System.NonSerialized]
         private Color m_lineColor = new Color(0.3515625f, 0.3515625f, 0.3515625f);
 
         [MenuItem("BTP/Quality/Attribute Validation/Custom Profile")]
@@ -174,9 +180,9 @@ namespace AttributeValidation
                 if (foldoutState.IsFoldOut)
                 {
                     EditorGUI.indentLevel++;
-                    foreach (BaseValidatableAttribute invalidAttribute in invalidField.InvalidAttributes)
+                    foreach (var invalidAttribute in invalidField.InvalidAttributes)
                     {
-                        EditorGUILayout.LabelField($"- {invalidAttribute.GetType().Name}");
+                        EditorGUILayout.LabelField($"- {invalidAttribute.GetAttributeType()}");
                     }
                     EditorGUI.indentLevel--;
                 }

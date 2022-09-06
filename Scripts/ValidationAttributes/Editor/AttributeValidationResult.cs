@@ -56,9 +56,9 @@ namespace AttributeValidation
                 var fieldName = kvp.Key.Name;
                 var invalidField = kvp.Value;
 
-                foreach (BaseValidatableAttribute invalidAttribute in invalidField.InvalidAttributes)
+                foreach (var invalidAttribute in invalidField.InvalidAttributes)
                 {
-                    AssetError error = new AssetError(invalidAttribute.GetType().Name, fieldName);
+                    AssetError error = new AssetError(invalidAttribute.GetAttributeType(), fieldName);
                     if (!result.Contains(entry))
                     {
                         entry.StringifiedType = invalidField.StringifiedType;
@@ -160,7 +160,7 @@ namespace AttributeValidation
         }
     }
 
-    public class InvalidAttribute
+    public class InvalidAttributeDescription
     {
         public string Name { get; set; }
 

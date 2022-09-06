@@ -11,9 +11,11 @@ namespace AttributeValidation
         public const string SPACE_INDENT = "  |  ";
 
         [SerializeField]
+        [AttributeValidation.NotNull]
         private List<string> m_folderPathsToIgnore = new List<string>();
 
         [SerializeField]
+        [AttributeValidation.NotNull]
         private List<string> m_fileExtensionsToIgnore = new List<string>();
 
         [SerializeField]

@@ -10,11 +10,13 @@ namespace AttributeValidation
             FieldInfo fieldInfo,
             IValidationContext validationContext)
         {
+            var validator = GetValidator();
+
             if (validationContext.ShouldIgnoreObj(obj, parentObj, fieldInfo))
             {
                 return true;
             }
-            return m_validator.Validate(obj, parentObj, fieldInfo);
+            return validator.Validate(obj, parentObj, fieldInfo);
         }
     }
 }

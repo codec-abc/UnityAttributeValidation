@@ -7,6 +7,8 @@ namespace AttributeValidation
     {
         public override bool Validate(object obj, object parentObj, FieldInfo fieldInfo, IValidationContext validationContext)
         {
+            var validator = GetValidator();
+
             // TODO: handle dictionary?
             if (typeof(IEnumerable).IsAssignableFrom(obj.GetType()))
             {
@@ -17,7 +19,7 @@ namespace AttributeValidation
                         continue;
                     }
 
-                    if (!m_validator.Validate(enuObj, parentObj, fieldInfo))
+                    if (!validator.Validate(enuObj, parentObj, fieldInfo))
                     {
                         return false;
                     }

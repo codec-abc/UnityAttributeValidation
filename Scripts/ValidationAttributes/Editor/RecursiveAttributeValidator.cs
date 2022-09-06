@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using static AttributeValidation.RecursiveFieldValidation;
 
 namespace AttributeValidation
 {
@@ -189,7 +190,7 @@ namespace AttributeValidation
         {
             var assetTypeAsString = assetToValidate.Asset.GetType().ToString();
             bool isFieldValid = true;
-            var invalidAttributes = new List<BaseValidatableAttribute>();
+            var invalidAttributes = new List<InvalidAttribute>();
 
             foreach (var attribute in Attribute.GetCustomAttributes(fieldInfo, typeof(BaseValidatableAttribute)))
             {
@@ -201,39 +202,57 @@ namespace AttributeValidation
                     fieldInfo,
                     validationContext))
                 {
-                    invalidAttributes.Add(validatableAttribute);
+                    invalidAttributes.Add(new InvalidAttribute(validatableAttribute.GetType().Name));
                     isFieldValid = false;
+                }
+            }
+
+            foreach (var extendedAttributeValidator in validationContext.GetExtendedAttributeValidator())
+            {
+                var typeOfAttribute = extendedAttributeValidator.Key;
+                var validatorForAttribute = extendedAttributeValidator.Value;
+
+                var attribute2 = Attribute.GetCustomAttribute(fieldInfo, typeOfAttribute);
+                if (attribute2 != null)
+                {
+                    if (validationContext.ShouldIgnoreObj(
+                        fieldInfo.GetValue(assetToValidate.Asset), 
+                        assetToValidate.Asset, 
+                        fieldInfo))
+                    {
+                        continue;
+                    }
+
+                    if (!validatorForAttribute.Validate(
+                        fieldInfo.GetValue(assetToValidate.Asset),
+                        assetToValidate.Asset,
+                        fieldInfo))
+                    {
+                        invalidAttributes.Add(new InvalidAttribute(validatorForAttribute.GetType().Name));
+                        isFieldValid = false;
+                    }
                 }
             }
 
             object fieldInfoValue = fieldInfo.GetValue(assetToValidate.Asset);
 
-            // crash Unity if the field is not a value type
-            // TODO: should open a bug for this
-            if (!fieldInfo.FieldType.IsValueType)
-            {
-                var childValidation = new List<RecursiveAssetValidation>();
+            var childValidation = new List<RecursiveAssetValidation>();
 
-                AddObjectValidation(
-                    new AssetToValidate(fieldInfoValue, assetToValidate),
-                    memorizedObjects,
-                    childValidation,
-                    validationContext);
+            AddObjectValidation(
+                new AssetToValidate(fieldInfoValue, assetToValidate),
+                memorizedObjects,
+                childValidation,
+                validationContext);
 
-                bool areAllChildsValid =
-                    !childValidation
-                    .Any((RecursiveAssetValidation objVal) => !objVal.IsValid);
+            bool areAllChildsValid =
+                !childValidation
+                .Any((RecursiveAssetValidation objVal) => !objVal.IsValid);
 
-                return new RecursiveFieldValidation(
-                    assetTypeAsString,
-                    isFieldValid && areAllChildsValid,
-                    invalidAttributes,
-                    childValidation);
-            }
-            else
-            {
-                return new RecursiveFieldValidation(assetTypeAsString, isFieldValid, invalidAttributes);
-            }
+            return new RecursiveFieldValidation(
+                assetTypeAsString,
+                isFieldValid && areAllChildsValid,
+                invalidAttributes,
+                childValidation);
         }
 
         private static void AddObjectValidation(

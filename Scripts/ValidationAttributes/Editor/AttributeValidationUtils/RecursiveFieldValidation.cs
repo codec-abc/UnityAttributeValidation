@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace AttributeValidation
@@ -12,7 +13,24 @@ namespace AttributeValidation
         public readonly string StringifiedType;
 
         public readonly bool IsValid;
-        public readonly List<BaseValidatableAttribute> InvalidAttributes;
+        public readonly List<InvalidAttribute> InvalidAttributes;
+
+        //public readonly List<BaseValidatableAttribute> InvalidAttributes;
+
+        public class InvalidAttribute
+        {
+            private readonly string m_attributeName;
+
+            public InvalidAttribute(string attributeName)
+            {
+                m_attributeName = attributeName;
+            }
+
+            internal string GetAttributeType()
+            {
+                return m_attributeName;
+            }
+        }
 
         public readonly bool IsFieldNotValue;
         public readonly List<RecursiveAssetValidation> ChildsValidations;
@@ -20,7 +38,7 @@ namespace AttributeValidation
         public RecursiveFieldValidation(
             string stringifiedType,
             bool isValid,
-            List<BaseValidatableAttribute> invalidAttributes)
+            List<InvalidAttribute> invalidAttributes)
         {
             StringifiedType = stringifiedType;
             IsValid = isValid;
@@ -31,7 +49,7 @@ namespace AttributeValidation
         public RecursiveFieldValidation(
             string stringifiedType,
             bool isValid,
-            List<BaseValidatableAttribute> invalidAttributes,
+            List<InvalidAttribute> invalidAttributes,
             List<RecursiveAssetValidation> childValidation) : this(stringifiedType, isValid, invalidAttributes)
         {
             IsFieldNotValue = true;

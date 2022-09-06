@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -7,6 +8,13 @@ namespace AttributeValidation
 {
     internal class BTPAttributeValidationContext : IValidationContext
     {
+        private readonly Dictionary<System.Type, BaseValidator> m_extendedValidators =
+            new Dictionary<System.Type, BaseValidator>()
+            {
+                // Too many errors
+                //{ typeof(RangeAttribute), new RangeValidator() },
+            };
+
         public bool ShouldIgnoreObj(object obj, object parentObj, FieldInfo fieldInfo)
         {
             if (ObjectValidationFilters.IsUnityObjImageParameter(parentObj))
@@ -99,6 +107,11 @@ namespace AttributeValidation
             }
 
             return false;
+        }
+
+        public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedAttributeValidator()
+        {
+            return m_extendedValidators;
         }
     }
 }
