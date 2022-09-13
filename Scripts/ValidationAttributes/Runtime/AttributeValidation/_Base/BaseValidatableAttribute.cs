@@ -6,9 +6,9 @@ namespace AttributeValidation
     public abstract class BaseValidatableAttribute : PropertyAttribute
     {
         public abstract bool Validate(
-            object obj, 
-            object parentObj, 
-            FieldInfo fieldInfo, 
+            object obj,
+            object parentObj,
+            FieldInfo fieldInfo,
             IValidationContext validationContext);
 
         protected abstract BaseValidator GetValidator();

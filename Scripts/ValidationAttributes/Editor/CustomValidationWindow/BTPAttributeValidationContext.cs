@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DUDE.Core.Attributes;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,8 +13,15 @@ namespace AttributeValidation
             new Dictionary<System.Type, BaseValidator>()
             {
                 // Too many errors
-                //{ typeof(RangeAttribute), new RangeValidator() },
+                // { typeof(RangeAttribute), new RangeValidator() },
+                // { typeof(DUDE.Core.Attributes.ObjectDatabaseAttribute), new ObjectDatabaseValidator() },
             };
+
+        private readonly Dictionary<System.Type, BaseValidator> m_extendedFieldValidators =
+           new Dictionary<System.Type, BaseValidator>()
+           {
+                { typeof(ObjectReference), new ObjectReferenceValidator() },
+           };
 
         public bool ShouldIgnoreObj(object obj, object parentObj, FieldInfo fieldInfo)
         {
@@ -109,9 +117,14 @@ namespace AttributeValidation
             return false;
         }
 
-        public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedAttributeValidator()
+        public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedAttributeValidators()
         {
             return m_extendedValidators;
+        }
+
+        public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedFieldValidators()
+        {
+            return m_extendedFieldValidators;
         }
     }
 }

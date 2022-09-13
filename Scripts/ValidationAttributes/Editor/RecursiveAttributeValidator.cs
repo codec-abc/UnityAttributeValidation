@@ -170,7 +170,8 @@ namespace AttributeValidation
                     continue;
                 }
 
-                var fieldValidation = GetRecursiveFieldValidation(assetToValidate, field, memorizedObjects, validationContext);
+                var fieldValidation =
+                    GetRecursiveFieldValidation(assetToValidate, field, memorizedObjects, validationContext);
 
                 if (!fieldValidation.IsValid)
                 {
@@ -189,50 +190,26 @@ namespace AttributeValidation
             IValidationContext validationContext)
         {
             var assetTypeAsString = assetToValidate.Asset.GetType().ToString();
-            bool isFieldValid = true;
             var invalidAttributes = new List<InvalidAttribute>();
 
-            foreach (var attribute in Attribute.GetCustomAttributes(fieldInfo, typeof(BaseValidatableAttribute)))
-            {
-                var validatableAttribute = (BaseValidatableAttribute)attribute;
-
-                if (!validatableAttribute.Validate(
-                    fieldInfo.GetValue(assetToValidate.Asset),
-                    assetToValidate.Asset,
+            var isFieldValid =
+                RunValidators(
+                    assetToValidate,
                     fieldInfo,
-                    validationContext))
-                {
-                    invalidAttributes.Add(new InvalidAttribute(validatableAttribute.GetType().Name));
-                    isFieldValid = false;
-                }
-            }
+                    validationContext,
+                    invalidAttributes);
 
-            foreach (var extendedAttributeValidator in validationContext.GetExtendedAttributeValidator())
-            {
-                var typeOfAttribute = extendedAttributeValidator.Key;
-                var validatorForAttribute = extendedAttributeValidator.Value;
+            isFieldValid &= RunExtentedAttributeValidators(
+                assetToValidate,
+                fieldInfo,
+                validationContext,
+                invalidAttributes);
 
-                var attribute2 = Attribute.GetCustomAttribute(fieldInfo, typeOfAttribute);
-                if (attribute2 != null)
-                {
-                    if (validationContext.ShouldIgnoreObj(
-                        fieldInfo.GetValue(assetToValidate.Asset), 
-                        assetToValidate.Asset, 
-                        fieldInfo))
-                    {
-                        continue;
-                    }
-
-                    if (!validatorForAttribute.Validate(
-                        fieldInfo.GetValue(assetToValidate.Asset),
-                        assetToValidate.Asset,
-                        fieldInfo))
-                    {
-                        invalidAttributes.Add(new InvalidAttribute(validatorForAttribute.GetType().Name));
-                        isFieldValid = false;
-                    }
-                }
-            }
+            isFieldValid &= RunExtentedFieldsValidators(
+                assetToValidate,
+                fieldInfo,
+                validationContext,
+                invalidAttributes);
 
             object fieldInfoValue = fieldInfo.GetValue(assetToValidate.Asset);
 
@@ -255,6 +232,106 @@ namespace AttributeValidation
                 childValidation);
         }
 
+        private static bool RunValidators(
+            AssetToValidate assetToValidate,
+            FieldInfo fieldInfo,
+            IValidationContext validationContext,
+            List<InvalidAttribute> invalidAttributes)
+        {
+            var isFieldValid = true;
+
+            foreach (var attribute in Attribute.GetCustomAttributes(fieldInfo, typeof(BaseValidatableAttribute)))
+            {
+                var validatableAttribute = (BaseValidatableAttribute)attribute;
+
+                if (!validatableAttribute.Validate(
+                    fieldInfo.GetValue(assetToValidate.Asset),
+                    assetToValidate.Asset,
+                    fieldInfo,
+                    validationContext))
+                {
+                    invalidAttributes.Add(new InvalidAttribute(validatableAttribute.GetType().Name));
+                    isFieldValid = false;
+                }
+            }
+
+            return isFieldValid;
+        }
+
+        private static bool RunExtentedAttributeValidators(
+            AssetToValidate assetToValidate,
+            FieldInfo fieldInfo,
+            IValidationContext validationContext,
+            List<InvalidAttribute> invalidAttributes)
+        {
+            var isFieldValid = true;
+            foreach (var extendedAttributeValidator in validationContext.GetExtendedAttributeValidators())
+            {
+                var typeOfAttribute = extendedAttributeValidator.Key;
+                var validatorForAttribute = extendedAttributeValidator.Value;
+
+                var attribute2 = Attribute.GetCustomAttribute(fieldInfo, typeOfAttribute);
+                if (attribute2 != null)
+                {
+                    if (validationContext.ShouldIgnoreObj(
+                        fieldInfo.GetValue(assetToValidate.Asset),
+                        assetToValidate.Asset,
+                        fieldInfo))
+                    {
+                        continue;
+                    }
+
+                    if (!validatorForAttribute.Validate(
+                        fieldInfo.GetValue(assetToValidate.Asset),
+                        assetToValidate.Asset,
+                        fieldInfo))
+                    {
+                        invalidAttributes.Add(new InvalidAttribute(validatorForAttribute.GetType().Name));
+                        isFieldValid = false;
+                    }
+                }
+            }
+
+            return isFieldValid;
+        }
+
+        private static bool RunExtentedFieldsValidators(
+            AssetToValidate assetToValidate,
+            FieldInfo fieldInfo,
+            IValidationContext validationContext,
+            List<InvalidAttribute> invalidAttributes)
+        {
+            var isFieldValid = true;
+
+            foreach (var fieldValidator in validationContext.GetExtendedFieldValidators())
+            {
+                var typeOfField = fieldValidator.Key;
+                var validator = fieldValidator.Value;
+
+                if (validationContext.ShouldIgnoreObj(
+                       fieldInfo.GetValue(assetToValidate.Asset),
+                       assetToValidate.Asset,
+                       fieldInfo))
+                {
+                    continue;
+                }
+
+                if (IsSameOrSubclass(typeOfField, fieldInfo.FieldType))
+                {
+                    if (!validator.Validate(
+                            fieldInfo.GetValue(assetToValidate.Asset),
+                            assetToValidate.Asset,
+                            fieldInfo))
+                    {
+                        invalidAttributes.Add(new InvalidAttribute(validator.GetType().Name));
+                        isFieldValid = false;
+                    }
+                }
+            }
+
+            return isFieldValid;
+        }
+
         private static void AddObjectValidation(
             AssetToValidate assetToValidate,
             MemorizedObjectsValidation memorizedObjects,
@@ -273,6 +350,12 @@ namespace AttributeValidation
             {
                 listToAppend.Add(validation);
             }
+        }
+
+        private static bool IsSameOrSubclass(Type potentialBase, Type potentialDescendant)
+        {
+            return potentialDescendant.IsSubclassOf(potentialBase)
+                   || potentialDescendant == potentialBase;
         }
 
         private static bool IsUnityObjAlive(UnityEngine.Object obj)

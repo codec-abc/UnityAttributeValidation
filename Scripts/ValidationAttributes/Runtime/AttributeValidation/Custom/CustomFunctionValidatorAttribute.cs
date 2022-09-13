@@ -14,9 +14,8 @@ namespace AttributeValidation
 
         public CustomFunctionValidatorAttribute(Type delegateType, string delegateName)
         {
-            m_customValidationFunction = 
-                (ValidateDelegate)
-                Delegate.CreateDelegate(typeof(ValidateDelegate), delegateType, delegateName);
+            m_customValidationFunction =
+                (ValidateDelegate)Delegate.CreateDelegate(typeof(ValidateDelegate), delegateType, delegateName);
         }
 
         protected override BaseValidator GetValidator()

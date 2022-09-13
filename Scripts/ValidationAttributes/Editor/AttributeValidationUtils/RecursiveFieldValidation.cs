@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace AttributeValidation
@@ -15,8 +14,7 @@ namespace AttributeValidation
         public readonly bool IsValid;
         public readonly List<InvalidAttribute> InvalidAttributes;
 
-        //public readonly List<BaseValidatableAttribute> InvalidAttributes;
-
+        // public readonly List<BaseValidatableAttribute> InvalidAttributes;
         public class InvalidAttribute
         {
             private readonly string m_attributeName;

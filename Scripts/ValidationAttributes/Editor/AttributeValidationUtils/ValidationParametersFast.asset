@@ -43,3 +43,4 @@ MonoBehaviour:
     - Assets/_PROJECT/0DAsset/TrafficData/
     - Assets/_PROJECT/
     m_fileExtensionsToIgnore: []
+    m_analyzeScenes: 0

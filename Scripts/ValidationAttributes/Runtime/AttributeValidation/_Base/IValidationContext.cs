@@ -23,7 +23,9 @@ namespace AttributeValidation
             UnityEngine.Object loadedObj,
             IAssetsToValidateCollection assetsToValidateCollection);
 
-        public IReadOnlyDictionary<Type, BaseValidator> GetExtendedAttributeValidator();
+        IReadOnlyDictionary<Type, BaseValidator> GetExtendedAttributeValidators();
+
+        IReadOnlyDictionary<Type, BaseValidator> GetExtendedFieldValidators();
     }
 
     public interface IAssetsToValidateCollection
