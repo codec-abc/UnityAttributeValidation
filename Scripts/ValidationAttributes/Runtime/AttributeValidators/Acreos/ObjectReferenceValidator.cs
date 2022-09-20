@@ -13,14 +13,15 @@ namespace AttributeValidation
                 return false;
             }
 
-            if (attributeFieldObj.GetType() != typeof(ObjectReference))
-            {
-                throw new System.Exception($"[{nameof(ObjectReferenceValidator)}] field is not a {typeof(ObjectReference)} for field {fieldInfo}.");
-            }
-
             var value = (ObjectReference)attributeFieldObj;
 
             var resourcesPath = value.ResourcesPath;
+
+            if (string.IsNullOrEmpty(resourcesPath))
+            {
+                return true;
+            }
+
             var resource = Resources.Load<UnityEngine.Object>(resourcesPath);
             return resource != null;
         }

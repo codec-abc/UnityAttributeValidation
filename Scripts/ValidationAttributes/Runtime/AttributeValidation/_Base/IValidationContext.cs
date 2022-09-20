@@ -10,6 +10,8 @@ namespace AttributeValidation
 
         bool ShouldIgnoreEnumerableObj(object enuObj, object obj, object parentObj, FieldInfo fieldInfo);
 
+        bool ShouldIgnoreType(Type type);
+
         void AddAssetsToValidate(IAssetsToValidateCollection assetsToValidateCollection);
 
         public enum CustomLogicResult

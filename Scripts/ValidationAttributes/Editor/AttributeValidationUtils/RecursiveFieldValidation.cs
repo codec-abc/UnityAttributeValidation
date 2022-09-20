@@ -12,7 +12,7 @@ namespace AttributeValidation
         public readonly string StringifiedType;
 
         public readonly bool IsValid;
-        public readonly List<InvalidAttribute> InvalidAttributes;
+        public readonly IReadOnlyList<InvalidAttribute> InvalidAttributes;
 
         // public readonly List<BaseValidatableAttribute> InvalidAttributes;
         public class InvalidAttribute
@@ -28,10 +28,15 @@ namespace AttributeValidation
             {
                 return m_attributeName;
             }
+
+            public override string ToString()
+            {
+                return $"InvalidAttribute: {m_attributeName}";
+            }
         }
 
         public readonly bool IsFieldNotValue;
-        public readonly List<RecursiveAssetValidation> ChildsValidations;
+        public readonly IReadOnlyList<RecursiveAssetValidation> ChildsValidations;
 
         public RecursiveFieldValidation(
             string stringifiedType,

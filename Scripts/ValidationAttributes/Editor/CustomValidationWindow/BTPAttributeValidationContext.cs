@@ -9,7 +9,7 @@ namespace AttributeValidation
 {
     internal class BTPAttributeValidationContext : IValidationContext
     {
-        private readonly Dictionary<System.Type, BaseValidator> m_extendedValidators =
+        private readonly Dictionary<System.Type, BaseValidator> m_extendedAttributeValidators =
             new Dictionary<System.Type, BaseValidator>()
             {
                 // Too many errors
@@ -18,10 +18,15 @@ namespace AttributeValidation
             };
 
         private readonly Dictionary<System.Type, BaseValidator> m_extendedFieldValidators =
-           new Dictionary<System.Type, BaseValidator>()
-           {
+            new Dictionary<System.Type, BaseValidator>()
+            {
                 { typeof(ObjectReference), new ObjectReferenceValidator() },
-           };
+                { typeof(DUDE.Core.Unit), new UnitValidator() },
+                { typeof(DUDE.Core.Inputs.Axis), new DUDECoreInputsAxisValidator() },
+                { typeof(DUDE.Core.Inputs.Input), new DUDECoreInputsInputValidator() },
+                { typeof(DUDE.HardwareData), new DUDEHardwareDataValidator() },
+                { typeof(DUDE.InputDudeData), new InputDudeDataValidator() },
+            };
 
         public bool ShouldIgnoreObj(object obj, object parentObj, FieldInfo fieldInfo)
         {
@@ -98,7 +103,13 @@ namespace AttributeValidation
             var parameters = exo.GetParameters(state);
             foreach (var parameter in parameters)
             {
-                var assetToValidate = new AssetToValidate(parameter, path, exo.Name + "/" + state + "/" + parameter);
+                var assetToValidate = 
+                    new AssetToValidate(
+                        parameter, 
+                        null, 
+                        exo.Name + "/" + state + "/" + parameter,
+                        path);
+
                 assetsToValidateCollection.AddIfNotAlreadyInAnalyzeList(assetToValidate);
             }
         }
@@ -119,12 +130,92 @@ namespace AttributeValidation
 
         public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedAttributeValidators()
         {
-            return m_extendedValidators;
+            return m_extendedAttributeValidators;
         }
 
         public IReadOnlyDictionary<System.Type, BaseValidator> GetExtendedFieldValidators()
         {
             return m_extendedFieldValidators;
+        }
+
+        public bool ShouldIgnoreType(System.Type type)
+        {
+            if (type == typeof(AwesomeTechnologies.Vegetation.PersistentStorage.PersistentVegetationItem))
+            {
+                return true;
+            }
+
+            if (type == typeof(AwesomeTechnologies.Vegetation.PersistentStorage.PersistentVegetationCell))
+            {
+                return true;
+            }
+
+            if (type == typeof(AwesomeTechnologies.Vegetation.PersistentStorage.SourceCount))
+            {
+                return true;
+            }
+
+            if (type == typeof(AwesomeTechnologies.Utility.BVHTree.LBVHNODE))
+            {
+                return true;
+            }
+
+            if (type == typeof(AwesomeTechnologies.Utility.BVHTree.LBVHTriangle))
+            {
+                return true;
+            }
+
+            if (type == typeof(DUDE.Circulation.RoadNetwork.Modifier.BaseModifier))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.TextCore.Glyph))
+            {
+                return true;
+            }
+
+            if (type == typeof(TMPro.TMP_Glyph))
+            {
+                return true;
+            }
+
+            if (type == typeof(TMPro.TMP_Character))
+            {
+                return true;
+            }
+
+            if (type == typeof(TMPro.TMP_FontWeightPair))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.TextCore.GlyphRect))
+            {
+                return true;
+            }
+
+            if (type == typeof(EasyRoads3Dv3.ERTerrainData))
+            {
+                return true;
+            }
+
+            if (type == typeof(EasyRoads3Dv3.ERTerrainChange))
+            {
+                return true;
+            }
+
+            if (type == typeof(EasyRoads3Dv3.ZIndexArray))
+            {
+                return true;
+            }
+
+            if (type == typeof(EasyRoads3Dv3.ERSORoadExt))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

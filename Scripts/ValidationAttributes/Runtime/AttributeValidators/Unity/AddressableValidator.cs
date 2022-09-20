@@ -13,13 +13,33 @@ namespace AttributeValidation
                 return false;
             }
 
-            if (attributeFieldObj.GetType() != typeof(string))
-            {
-                throw new Exception($"[{nameof(ResourcePathValidator)}] field is not a string");
-            }
+            return IsAddressValidWeak((string)attributeFieldObj);
+        }
+
+        public static bool IsAddressValid(string path)
+        {
             try
             {
-                var load = Addressables.LoadAssetAsync<UnityEngine.Object>(attributeFieldObj);
+                var load = Addressables.LoadAssetAsync<UnityEngine.Object>(path);
+                var obj = load.WaitForCompletion();
+                return obj != null;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static bool IsAddressValidWeak(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return true;
+            }
+
+            try
+            {
+                var load = Addressables.LoadAssetAsync<UnityEngine.Object>(path);
                 var obj = load.WaitForCompletion();
                 return obj != null;
             }

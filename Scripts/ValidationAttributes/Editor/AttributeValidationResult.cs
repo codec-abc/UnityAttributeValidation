@@ -36,7 +36,6 @@ namespace AttributeValidation
                     new InvalidAssetsEntry(
                         invalidAsset.GetAssetNameSafe(),
                         invalidAsset.GetTopParentBasePath(),
-                        invalidAsset.GetHierarchy(),
                         "Unknown type");
 
                 RecursiveAssetValidation errors = resultDict[invalidAsset];
@@ -51,7 +50,7 @@ namespace AttributeValidation
             RecursiveAssetValidation errors,
             List<InvalidAssetsEntry> result)
         {
-            foreach (KeyValuePair<FieldInfo, RecursiveFieldValidation> kvp in errors.InvalidFields)
+            foreach (var kvp in errors.InvalidFields)
             {
                 var fieldName = kvp.Key.Name;
                 var invalidField = kvp.Value;
@@ -69,17 +68,28 @@ namespace AttributeValidation
 
                 if (invalidField.IsFieldNotValue && invalidField.ChildsValidations.Count != 0)
                 {
+                    var oldEntry = entry;
+
                     foreach (RecursiveAssetValidation invalidAsset in invalidField.ChildsValidations)
                     {
-                        var oldEntry = entry;
                         entry = new InvalidAssetsEntry(
                             invalidAsset.AssetName,
                             oldEntry.AssetPath,
-                            oldEntry.Hierarchy + "//" + entry.Hierarchy,
                             invalidField.StringifiedType);
+
                         RecursiveFlatten(entry, invalidAsset, result);
                     }
                 }
+            }
+
+            foreach (var child in errors.InvalidChildren)
+            {
+                entry = new InvalidAssetsEntry(
+                            child.AssetName,
+                            entry.AssetPath,
+                            "Transform");
+
+                RecursiveFlatten(entry, child, result);
             }
         }
 
@@ -131,19 +141,16 @@ namespace AttributeValidation
 
     public class InvalidAssetsEntry
     {
-        public InvalidAssetsEntry(string name, string path, string hierarchy, string assetType)
+        public InvalidAssetsEntry(string name, string path, string assetType)
         {
             Name = name;
             AssetPath = path;
-            Hierarchy = hierarchy;
             StringifiedType = assetType;
         }
 
         public string Name { get; private set; }
 
         public string AssetPath { get; private set; }
-
-        public string Hierarchy { get; private set; }
 
         public string StringifiedType { get; set; }
 
@@ -157,6 +164,11 @@ namespace AttributeValidation
         internal string GetAssetPath()
         {
             return AssetPath;
+        }
+
+        public override string ToString()
+        {
+            return $"{AssetPath}, {Name}, {StringifiedType}";
         }
     }
 
@@ -178,5 +190,10 @@ namespace AttributeValidation
         public string AttributeErrorName { get; private set; }
 
         public string FieldName { get; private set; }
+
+        public override string ToString()
+        {
+            return $"AssetError: {FieldName}, {AttributeErrorName}";
+        }
     }
 }

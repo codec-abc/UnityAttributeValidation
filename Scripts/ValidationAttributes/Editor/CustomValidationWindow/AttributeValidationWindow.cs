@@ -43,10 +43,26 @@ namespace AttributeValidation
             validationWin.titleContent = new GUIContent("Attribute Validation");
         }
 
-        [MenuItem("BTP/Quality/Attribute Validation/BTP Profile")]
-        public static void RunBTPAttributeValidationOnAssets()
+        [MenuItem("BTP/Quality/Attribute Validation/BTP Profile (With Scenes)")]
+        public static void RunBTPAttributeValidationOnAssetsWithScenes()
         {
-            var result = BTPAttributeValidation.RunBTPAttributeValidatorConfig();
+            var result = BTPAttributeValidation.RunBTPAttributeValidatorConfig(true);
+            if (result.ValidationResultKind != AttributeValidationResult.ResultKind.Success)
+            {
+                var errorMsg = result.ToJsonResult();
+                Debug.LogError(errorMsg);
+                ShowErrorDialog();
+            }
+            else
+            {
+                ShowGoodDialog();
+            }
+        }
+
+        [MenuItem("BTP/Quality/Attribute Validation/BTP Profile (No Scene)")]
+        public static void RunBTPAttributeValidationOnAssetsNoScene()
+        {
+            var result = BTPAttributeValidation.RunBTPAttributeValidatorConfig(false);
             if (result.ValidationResultKind != AttributeValidationResult.ResultKind.Success)
             {
                 var errorMsg = result.ToJsonResult();
@@ -121,7 +137,7 @@ namespace AttributeValidation
                     foreach (var invalidAsset in m_validationResult.InvalidAssets.Keys)
                     {
                         DisplayAssetValidation(
-                            $"{invalidAsset.GetAssetNameSafe()}  -  Path : {invalidAsset.GetFullAssetPath()}",
+                            $"{invalidAsset.GetAssetNameSafe()}  -  Path : {invalidAsset.AssetName}",
                             m_validationResult.InvalidAssets[invalidAsset]);
 
                         EditorGUILayout.Separator();
@@ -144,6 +160,8 @@ namespace AttributeValidation
                 {
                     DisplayFieldValidation(fieldInfo.Name, invalidAsset.InvalidFields[fieldInfo]);
                 }
+
+                // TODO : handle child transforms
                 EditorGUI.indentLevel--;
             }
         }

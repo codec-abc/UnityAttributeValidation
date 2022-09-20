@@ -190,7 +190,7 @@ namespace AttributeValidation
                     {
                         if (ob != null)
                         {
-                            AssetToValidate childComp = new AssetToValidate(ob, path, "/");
+                            AssetToValidate childComp = new AssetToValidate(ob, null, ob.name, path);
                             AddIfNotAlreadyInAnalyzeList(childComp);
                         }
                     }
@@ -285,8 +285,9 @@ namespace AttributeValidation
                     {
                         var childComp = new AssetToValidate(
                             component,
-                            path,
-                            $"{hierarchy}" + $"[{component.GetType()}]");
+                            null,
+                            $"{hierarchy}" + $"[{component.GetType()}]",
+                            path);
 
                         AddIfNotAlreadyInAnalyzeList(childComp);
                     }
@@ -336,53 +337,6 @@ namespace AttributeValidation
                 }
             }
             return false;
-        }
-
-        private static void StringifyObjectValidation(
-            List<RecursiveAssetValidation> validation,
-            StringBuilder builder,
-            int indentLevel)
-        {
-            foreach (var invalidObject in validation)
-            {
-                foreach (var fieldInfo in invalidObject.InvalidFields.Keys)
-                {
-                    _ = builder.AppendLine(
-                        Concat(AttributeValidationConfig.SPACE_INDENT, indentLevel) +
-                        $"=> Field [{fieldInfo.Name}] invalid attributes : ");
-
-                    RecursiveFieldValidation fieldValidation = invalidObject.InvalidFields[fieldInfo];
-
-                    StringifyFieldValidation(fieldValidation, builder, indentLevel + 1);
-                }
-            }
-        }
-
-        private static void StringifyFieldValidation(
-            RecursiveFieldValidation validation,
-            StringBuilder builder,
-            int indentLevel)
-        {
-            if (validation.IsValid)
-            {
-                _ = builder.AppendLine(
-                    Concat(AttributeValidationConfig.SPACE_INDENT, indentLevel) +
-                    "- Is Valid");
-            }
-            else
-            {
-                foreach (var invalidAttribute in validation.InvalidAttributes)
-                {
-                    _ = builder.AppendLine(
-                        Concat(AttributeValidationConfig.SPACE_INDENT, indentLevel) +
-                        $"=> {invalidAttribute.GetAttributeType()}");
-                }
-                if (validation.IsFieldNotValue && validation.ChildsValidations.Count != 0)
-                {
-                    _ = builder.AppendLine(Concat(AttributeValidationConfig.SPACE_INDENT, indentLevel) + $"Invalid Children : ");
-                    StringifyObjectValidation(validation.ChildsValidations, builder, indentLevel + 1);
-                }
-            }
         }
 
         private static string Concat(string st, int times)

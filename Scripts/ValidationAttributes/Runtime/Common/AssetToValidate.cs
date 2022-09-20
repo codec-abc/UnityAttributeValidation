@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AttributeValidation
 {
@@ -11,33 +9,17 @@ namespace AttributeValidation
         public readonly string AssetName = "";
         public readonly AssetToValidate Parent;
         public readonly string BasePath = "";
-        public readonly string Hierarchy = "/";
 
-        public AssetToValidate(object asset, AssetToValidate parentAsset)
+        public AssetToValidate(
+            object asset,
+            AssetToValidate parentAsset,
+            string assetName,
+            string basePath)
         {
             Asset = asset;
             Parent = parentAsset;
-            try
-            {
-                AssetName = Asset.ToString();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        public AssetToValidate(object asset, string basePath, string initialHierarchy)
-        {
-            Asset = asset;
+            AssetName = assetName;
             BasePath = basePath;
-            Hierarchy = initialHierarchy;
-            try
-            {
-                AssetName = Asset.ToString();
-            }
-            catch (Exception)
-            {
-            }
         }
 
         public override bool Equals(object obj)
@@ -62,26 +44,6 @@ namespace AttributeValidation
             return AssetName;
         }
 
-        public string GetFullAssetPath()
-        {
-            List<AssetToValidate> parentList = GetRootAssetToCurrent();
-            var msg = parentList[0].BasePath + ":";
-            msg += parentList.Aggregate("", (a, b) => a + "/" + b.GetAssetNameSafe());
-            return msg;
-        }
-
-        public string GetHierarchy()
-        {
-            List<AssetToValidate> parentList = GetRootAssetToCurrent();
-            var msg = "";
-            foreach (var elem in parentList)
-            {
-                msg += elem.Hierarchy;
-            }
-
-            return msg;
-        }
-
         public string GetTopParentBasePath()
         {
             List<AssetToValidate> parentList = GetRootAssetToCurrent();
@@ -102,11 +64,6 @@ namespace AttributeValidation
             parentList.Add(currentAsset);
             parentList.Reverse();
 
-            // foreach (var elem in parentList)
-            // {
-            //    debugMsg += $"Name: {elem.AssetName}, Hierarchy: {elem.Hierarchy}, BasePath: {elem.BasePath} " + "\n";
-            // }
-            // Debug.LogError($"debugMsg is {debugMsg}");
             return parentList;
         }
     }

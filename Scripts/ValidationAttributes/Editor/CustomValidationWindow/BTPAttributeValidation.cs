@@ -46,13 +46,11 @@ namespace AttributeValidation
             }
         }
 
-        public static AttributeValidationResult RunBTPAttributeValidatorConfig()
+        public static AttributeValidationResult RunBTPAttributeValidatorConfig(bool analyzeScenes)
         {
             List<string> pathsToIgnore = GetBTPIgnorePath();
 
             var fileExtToIgnore = GetIgnoredFileTypeExtensions();
-
-            var analyzeScenes = true;
 
             var config = new AttributeValidationConfig(
                 pathsToIgnore,

@@ -1,6 +1,11 @@
 using System.Reflection;
 using AttributeValidation;
+using DUDE.Core.Attributes;
 using UnityEngine;
+
+#pragma warning disable 0169
+#pragma warning disable 0649
+#pragma warning disable CA1823
 
 public class TestAttributeValidator2 : MonoBehaviour
 {
@@ -70,6 +75,84 @@ public class TestAttributeValidator2 : MonoBehaviour
     [Range(-1, 1)]
     private int m_test8_bad = 2;
 
+    [SerializeField, NotNull, ObjectDatabase]
+    protected string m_test9_good = string.Empty;
+
+    [SerializeField, NotNull, ObjectDatabase]
+    protected string m_test9_bad = string.Empty;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.JustSelf)]
+    private GameObject m_test10_self_good;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.JustSelf)]
+    private GameObject m_test10_self_bad;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsOnly)]
+    private GameObject m_test11_parent_only_good;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsOnly)]
+    private GameObject m_test11_parent_only_bad_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsOnly)]
+    private GameObject m_test11_parent_only_bad_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsOnly)]
+    private GameObject m_test11_parent_only_bad_2;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsOnly)]
+    private GameObject m_test12_childs_only_good;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsOnly)]
+    private GameObject m_test12_childs_only_bad_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsOnly)]
+    private GameObject m_test12_childs_only_bad_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsOnly)]
+    private GameObject m_test12_childs_only_bad_2;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsAndSelf)]
+    private GameObject m_test13_parent_self_good_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsAndSelf)]
+    private GameObject m_test13_parent_self_good_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsAndSelf)]
+    private GameObject m_test13_parent_self_bad_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ParentsAndSelf)]
+    private GameObject m_test13_parent_self_bad_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private GameObject m_test14_child_self_good_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private GameObject m_test14_child_self_good_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private GameObject m_test14_child_self_bad_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private GameObject m_test14_child_self_bad_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private Transform m_test15_child_self_transform_good_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private Transform m_test15_child_self_transform_good_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private Transform m_test15_child_self_transform_bad_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.ChildsAndSelf)]
+    private Transform m_test15_child_self_transform_bad_1;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.Any)]
+    private GameObject m_test16_any_good_0;
+
+    [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.Any)]
+    private GameObject m_test16_any_good_1;
+
     private static bool IsEven(object attributeFieldObj, object ownerObj, FieldInfo fieldInfo)
     {
         if (attributeFieldObj is int intValue)
@@ -80,3 +163,7 @@ public class TestAttributeValidator2 : MonoBehaviour
         return false;
     }
 }
+
+#pragma warning restore 0169
+#pragma warning restore 0649
+#pragma warning restore CA1823

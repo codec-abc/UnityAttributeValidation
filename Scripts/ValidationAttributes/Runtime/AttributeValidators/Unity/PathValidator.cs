@@ -46,11 +46,6 @@ namespace AttributeValidation
                 return false;
             }
 
-            if (attributeFieldObj.GetType() != typeof(string))
-            {
-                throw new Exception($"[{nameof(PathValidator)}] Cannot validate a path which is not stored as a string for {fieldInfo}");
-            }
-
             var attributeAsString = (string)attributeFieldObj;
             attributeAsString = attributeAsString.Replace("\\", "/");
 

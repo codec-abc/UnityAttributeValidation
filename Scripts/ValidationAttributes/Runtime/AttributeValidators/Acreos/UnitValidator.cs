@@ -1,10 +1,8 @@
-using System;
 using System.Reflection;
-using UnityEngine;
 
 namespace AttributeValidation
 {
-    public class ResourcePathValidator : BaseValidator
+    public class UnitValidator : BaseValidator
     {
         public override bool Validate(object attributeFieldObj, object ownerObj, FieldInfo fieldInfo)
         {
@@ -13,9 +11,12 @@ namespace AttributeValidation
                 return false;
             }
 
-            var content = (string)attributeFieldObj;
-            var resource = Resources.Load<UnityEngine.Object>(content);
-            return resource != null;
+            var value = (DUDE.Core.Unit)attributeFieldObj;
+
+            return
+                !string.IsNullOrWhiteSpace(value.UnitKey); // &&
+
+            // !string.IsNullOrWhiteSpace(value.Format);
         }
     }
 }

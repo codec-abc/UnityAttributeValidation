@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 using static AttributeValidation.RecursiveFieldValidation;
 
 namespace AttributeValidation
@@ -74,12 +75,19 @@ namespace AttributeValidation
             }
         }
 
+#if DUMP_ENUMERABLE_CONTENT
+        private static Dictionary<Type, int> s_countByTypes = new Dictionary<Type, int>();
+#endif
+
         public static Dictionary<AssetToValidate, RecursiveAssetValidation> GetAllInvalidObjectsRecursively(
             AssetToValidate[] assetsToCheck,
             IValidationContext validationContext)
         {
             Dictionary<AssetToValidate, RecursiveAssetValidation> invalidObjects =
                 new Dictionary<AssetToValidate, RecursiveAssetValidation>();
+#if DUMP_ENUMERABLE_CONTENT
+            s_countByTypes.Clear();
+#endif
 
             MemorizedObjectsValidation memorizedObjectValidation = new MemorizedObjectsValidation();
 
@@ -121,7 +129,87 @@ namespace AttributeValidation
                 currentAssetIndex++;
             }
 
+#if DUMP_ENUMERABLE_CONTENT
+            var dict = s_countByTypes.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+            foreach (var kvp in dict)
+            {
+                UnityEngine.Debug.LogError($"for type {kvp.Key} there is {kvp.Value} element(s) checked for enumerable");
+            }
+#endif
+
             return invalidObjects;
+        }
+
+        private static (bool, List<RecursiveAssetValidation>) ProcessChildAssets(
+            AssetToValidate assetToValidate, 
+            MemorizedObjectsValidation memorizedObjects,
+            IValidationContext context,
+            Dictionary<FieldInfo, RecursiveFieldValidation> dict)
+        {
+            var obj = assetToValidate.Asset;
+            GameObject go = null;
+            if (obj is Component comp)
+            {
+                go = comp.gameObject;
+            }
+            else if (obj is GameObject gameObj)
+            {
+                go = gameObj;
+            }
+
+            if (go == null)
+            {
+                return (true, new List<RecursiveAssetValidation>() { });
+            }
+
+            var all = go.GetComponentsInChildren<Transform>(true).ToList();
+            all.AddRange(go.GetComponentsInParent<Transform>(true));
+
+            var childValidation = new List<RecursiveAssetValidation>();
+
+            foreach (var gameObject in all)
+            {
+                string hierarchy = GetHierarchyToGoFromGo(gameObject.gameObject, go);
+                foreach (var component in gameObject.GetComponents<Component>())
+                {
+                    if (component != null && !(component is Transform))
+                    {
+                        var childComp = new AssetToValidate(
+                            component,
+                            null,
+                            $"{hierarchy}" + $"[{component.GetType()}]",
+                            assetToValidate.BasePath);
+
+                        AddObjectValidation(childComp, memorizedObjects, childValidation, context);
+                    }
+                }
+            }
+
+            bool areAllChildsValid =
+               !childValidation
+               .Any((RecursiveAssetValidation objVal) => !objVal.IsValid);
+
+            return (areAllChildsValid, childValidation);
+        }
+
+        private static string GetHierarchyToGoFromGo(GameObject childGameObject, GameObject rootGameObject)
+        {
+            var hierarchy = "";
+            var current = childGameObject;
+            while (current.transform.parent != null && current.transform.parent.gameObject != rootGameObject)
+            {
+                hierarchy = current.name + "/" + hierarchy;
+                current = current.transform.parent.gameObject;
+            }
+
+            if (current != rootGameObject)
+            {
+                hierarchy = current.name + "/" + hierarchy;
+            }
+
+            hierarchy = "/" + rootGameObject.name + "/" + hierarchy;
+            return hierarchy;
         }
 
         private static RecursiveAssetValidation GetRecursiveObjectValidation(
@@ -140,6 +228,9 @@ namespace AttributeValidation
 
             var invalidFields = new Dictionary<FieldInfo, RecursiveFieldValidation>();
 
+            var (areChildrenValids, invalidChildren) = 
+                ProcessChildAssets(assetToValidate, memorizedObjects, validationContext, invalidFields);
+
             foreach (FieldInfo field in fieldsInfos)
             {
                 var attributes = field.CustomAttributes;
@@ -150,7 +241,7 @@ namespace AttributeValidation
                 {
                     foreach (var attribute in attributes)
                     {
-                        if (attribute.AttributeType == typeof(UnityEngine.SerializeField))
+                        if (attribute.AttributeType == typeof(SerializeField))
                         {
                             shouldBeAnalyzed = true;
                         }
@@ -159,7 +250,7 @@ namespace AttributeValidation
 
                 foreach (var attribute in attributes)
                 {
-                    if (attribute.AttributeType == typeof(System.NonSerializedAttribute))
+                    if (attribute.AttributeType == typeof(NonSerializedAttribute))
                     {
                         shouldBeAnalyzed = false;
                     }
@@ -180,7 +271,11 @@ namespace AttributeValidation
                 }
             }
 
-            return new RecursiveAssetValidation(assetToValidate.GetAssetNameSafe(), isObjValid, invalidFields);
+            return new RecursiveAssetValidation(
+                assetToValidate.GetAssetNameSafe(), 
+                isObjValid && areChildrenValids, 
+                invalidFields,
+                invalidChildren);
         }
 
         private static RecursiveFieldValidation GetRecursiveFieldValidation(
@@ -215,11 +310,55 @@ namespace AttributeValidation
 
             var childValidation = new List<RecursiveAssetValidation>();
 
+            var isListOrArray = TryGetListOrArrayType(fieldInfoValue, out var type);
+
+            var fieldToValidate = new 
+                AssetToValidate(
+                    fieldInfoValue, 
+                    assetToValidate, 
+                    assetToValidate.AssetName + "/" + fieldInfo.Name,
+                    assetToValidate.GetTopParentBasePath());
+
             AddObjectValidation(
-                new AssetToValidate(fieldInfoValue, assetToValidate),
-                memorizedObjects,
-                childValidation,
-                validationContext);
+                    fieldToValidate,
+                    memorizedObjects,
+                    childValidation,
+                    validationContext);
+
+            if (isListOrArray && !ShouldTypeBeIgnoreForListOrArray(type, validationContext))
+            {
+                var asEnumerable = (System.Collections.IEnumerable)fieldInfoValue;
+
+                var count = -1;
+                foreach (var elemValue in asEnumerable)
+                {
+                    count++;
+                    if (elemValue != null)
+                    {
+                        var currentElemToValidate = new AssetToValidate(
+                                elemValue,
+                                fieldToValidate,
+                                fieldToValidate.AssetName + "/" + fieldInfo.Name + $"[{count}]",
+                                fieldToValidate.GetTopParentBasePath());
+
+                        AddObjectValidation(
+                            currentElemToValidate,
+                            memorizedObjects,
+                            childValidation,
+                            validationContext);
+#if DUMP_ENUMERABLE_CONTENT
+                        if (s_countByTypes.TryGetValue(type, out int count))
+                        {
+                            s_countByTypes[type] = count + 1;
+                        }
+                        else
+                        {
+                            s_countByTypes[type] = 1;
+                        }
+#endif
+                    }
+                }
+            }
 
             bool areAllChildsValid =
                 !childValidation
@@ -363,6 +502,188 @@ namespace AttributeValidation
 #pragma warning disable RS0030
             return obj;
 #pragma warning restore
+        }
+
+        public static bool TryGetListOrArrayType(object obj, out Type type)
+        {
+            type = null;
+            if (obj == null)
+            {
+                return false;
+            }
+            var isArray = obj.GetType().IsArray;
+
+            if (isArray)
+            {
+                type = obj.GetType().GetElementType();
+                return true;
+            }
+
+            var isList = IsList(obj);
+
+            if (isList)
+            {
+                type = obj.GetType().GenericTypeArguments[0];
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsList(object o)
+        {
+            if (o == null)
+            {
+                return false;
+            }
+            return o is System.Collections.IList &&
+                   o.GetType().IsGenericType &&
+                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));
+        }
+
+        public static bool IsPrimitiveType(Type type)
+        {
+            if (type == typeof(string))
+            {
+                return true;
+            }
+
+            if (type == typeof(bool))
+            {
+                return true;
+            }
+
+            if (type == typeof(float))
+            {
+                return true;
+            }
+
+            if (type == typeof(int))
+            {
+                return true;
+            }
+
+            if (type == typeof(uint))
+            {
+                return true;
+            }
+
+            if (type == typeof(char))
+            {
+                return true;
+            }
+
+            if (type == typeof(byte))
+            {
+                return true;
+            }
+
+            if (type == typeof(sbyte))
+            {
+                return true;
+            }
+
+            if (type == typeof(double))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsUnityBasicTypes(Type type)
+        {
+            if (type == typeof(UnityEngine.Vector2))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Vector3))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Vector4))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Vector2Int))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Vector3Int))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Quaternion))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Matrix4x4))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Rect))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Color))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Color32))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool ShouldTypeBeIgnoreForListOrArray(Type type, IValidationContext context)
+        {
+            if (IsPrimitiveType(type))
+            {
+                return true;
+            }
+
+            if (IsUnityBasicTypes(type))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Material))
+            {
+                return true;
+            }
+
+            if (type == typeof(UnityEngine.Rigidbody))
+            {
+                return true;
+            }
+
+            if (type.IsSubclassOf(typeof(UnityEngine.Collider)))
+            {
+                return true;
+            }
+
+            if (type.IsSubclassOf(typeof(UnityEngine.Texture)))
+            {
+                return true;
+            }
+
+            if (type.IsSubclassOf(typeof(UnityEngine.Renderer)))
+            {
+                return true;
+            }
+
+            return context.ShouldIgnoreType(type);
         }
     }
 }

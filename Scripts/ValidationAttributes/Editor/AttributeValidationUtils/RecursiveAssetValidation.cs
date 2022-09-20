@@ -12,15 +12,35 @@ namespace AttributeValidation
         public readonly bool IsValid;
 
         public readonly Dictionary<FieldInfo, RecursiveFieldValidation> InvalidFields;
+        public readonly List<RecursiveAssetValidation> InvalidChildren;
 
         public RecursiveAssetValidation(
             string assetName,
             bool isValid,
-            Dictionary<FieldInfo, RecursiveFieldValidation> invalidFields)
+            Dictionary<FieldInfo, RecursiveFieldValidation> invalidFields,
+            List<RecursiveAssetValidation> invalidChidren)
         {
             AssetName = assetName;
             IsValid = isValid;
             InvalidFields = invalidFields;
+            InvalidChildren = invalidChidren;
+        }
+
+        public override string ToString()
+        {
+            var msg = $"{AssetName}, IsValid: {IsValid}: ";
+
+            foreach (var kvp in InvalidFields)
+            {
+                msg += $"{kvp.Key.Name}";
+            }
+
+            foreach (var child in InvalidChildren)
+            {
+                msg += $"{child}\n";
+            }
+
+            return msg;
         }
     }
 }
