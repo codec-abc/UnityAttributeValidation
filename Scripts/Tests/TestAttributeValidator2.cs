@@ -1,6 +1,5 @@
 using System.Reflection;
 using AttributeValidation;
-using DUDE.Core.Attributes;
 using UnityEngine;
 
 #pragma warning disable 0169
@@ -75,10 +74,10 @@ public class TestAttributeValidator2 : MonoBehaviour
     [Range(-1, 1)]
     private int m_test8_bad = 2;
 
-    [SerializeField, NotNull, ObjectDatabase]
+    [SerializeField, NotNull]
     protected string m_test9_good = string.Empty;
 
-    [SerializeField, NotNull, ObjectDatabase]
+    [SerializeField, NotNull]
     protected string m_test9_bad = string.Empty;
 
     [SerializeField, NotNull, HierarchyValidation(HierarchyValidator.HierarchyPosition.JustSelf)]

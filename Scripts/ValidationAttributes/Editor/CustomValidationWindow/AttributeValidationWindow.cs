@@ -36,17 +36,17 @@ namespace AttributeValidation
         [System.NonSerialized]
         private Color m_lineColor = new Color(0.3515625f, 0.3515625f, 0.3515625f);
 
-        [MenuItem("BTP/Quality/Attribute Validation/Custom Profile")]
+        [MenuItem("Attribute Validation/Custom Profile")]
         public static void DrawValidationWindow()
         {
             EditorWindow validationWin = GetWindow<AttributeValidationWindow>();
             validationWin.titleContent = new GUIContent("Attribute Validation");
         }
 
-        [MenuItem("BTP/Quality/Attribute Validation/BTP Profile (With Scenes)")]
-        public static void RunBTPAttributeValidationOnAssetsWithScenes()
+        [MenuItem("Attribute Validation/Demo Profile (With Scenes)")]
+        public static void RunDemoAttributeValidationOnAssetsWithScenes()
         {
-            var result = BTPAttributeValidation.RunBTPAttributeValidatorConfig(true);
+            var result = DemoAttributeValidation.RunDemoAttributeValidatorConfig(true);
             if (result.ValidationResultKind != AttributeValidationResult.ResultKind.Success)
             {
                 var errorMsg = result.ToJsonResult();
@@ -59,10 +59,10 @@ namespace AttributeValidation
             }
         }
 
-        [MenuItem("BTP/Quality/Attribute Validation/BTP Profile (No Scene)")]
-        public static void RunBTPAttributeValidationOnAssetsNoScene()
+        [MenuItem("Attribute Validation/Demo Profile (No Scene)")]
+        public static void RunDemoAttributeValidationOnAssetsNoScene()
         {
-            var result = BTPAttributeValidation.RunBTPAttributeValidatorConfig(false);
+            var result = DemoAttributeValidation.RunDemoAttributeValidatorConfig(false);
             if (result.ValidationResultKind != AttributeValidationResult.ResultKind.Success)
             {
                 var errorMsg = result.ToJsonResult();

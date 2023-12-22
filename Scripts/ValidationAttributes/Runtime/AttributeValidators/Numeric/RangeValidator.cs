@@ -58,14 +58,14 @@ namespace AttributeValidation
             {
                 return k;
             }
-            if (attributeFieldObj is UnityEngine.Rendering.PostProcessing.FloatParameter floatParam)
-            {
-                return floatParam.value;
-            }
-            if (attributeFieldObj is UnityEngine.Rendering.PostProcessing.IntParameter intParam)
-            {
-                return intParam.value;
-            }
+            //if (attributeFieldObj is UnityEngine.Rendering.PostProcessing.FloatParameter floatParam)
+            //{
+            //    return floatParam.value;
+            //}
+            //if (attributeFieldObj is UnityEngine.Rendering.PostProcessing.IntParameter intParam)
+            //{
+            //    return intParam.value;
+            //}
 
             throw new System.Exception($"Type for range attribute is not valid {attributeFieldObj.GetType()}  for field {fieldInfo}");
 
